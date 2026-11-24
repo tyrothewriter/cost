@@ -80,25 +80,25 @@ button{width:100%;margin-top:16px;font:inherit;font-size:1.1rem;font-weight:600;
 </main>
 <script>
 (function(){
-var PLANS=[{key:"C",rate:0.22149},{key:"N",rate:0.16799}];
+var PLANS=[{key:"C",rate:0.22149,ats:14.98},{key:"N",rate:0.16799,ats:0}];
 var $=function(i){return document.getElementById(i)};
 var f=function(n,d){return n.toLocaleString("th-TH",{minimumFractionDigits:d,maximumFractionDigits:d})};
-function calc(R,q,bp,sp,sq){
- var bv=q*bp,bc=bv*R/100,bt=bv+bc,r={bv:bv,bc:bc,bt:bt,unit:bt/q,fee:bc};
- if(sp>0){var sv=sq*sp,sc=sv*R/100,sn=sv-sc,cost=bt/q*sq,pl=sn-cost;
-  r.s={sv:sv,sc:sc,sn:sn,pl:pl,pc:pl/cost*100};r.fee+=sc}
+function calc(R,A,q,bp,sp,sq){
+ var bv=q*bp,bc=bv*R/100,bt=bv+bc+A,r={bv:bv,bc:bc,A:A,bt:bt,unit:bt/q,fee:bc+A};
+ if(sp>0){var sv=sq*sp,sc=sv*R/100,sn=sv-sc-A,cost=bt/q*sq,pl=sn-cost;
+  r.s={sv:sv,sc:sc,sn:sn,pl:pl,pc:pl/cost*100};r.fee+=sc+A}
  return r}
 function card(p,r,best){
  var h='<div class="res'+(best?' best':'')+'"><div class="head"><h2>แบบ '+p.key+'</h2>'+(best?'<span class="tag">ถูกกว่า</span>':'')+'</div>'
- +'<p class="rate">ค่าคอม '+p.rate+'%</p>'
+ +'<p class="rate">ค่าคอม '+p.rate+'%'+(p.ats>0?' + ค่า ATS '+f(p.ats,2)+' บาท/ครั้ง':'')+'</p>'
  +'<div class="line"><span>มูลค่าหุ้น</span><b>'+f(r.bv,2)+'</b></div>'
- +'<div class="line"><span>ค่าคอมซื้อ</span><b>'+f(r.bc,2)+'</b></div>'
+ +'<div class="line"><span>ค่าคอมซื้อ</span><b>'+f(r.bc,2)+'</b></div>'+(r.A>0?'<div class="line"><span>ค่า ATS</span><b>'+f(r.A,2)+'</b></div>':'')
  +'<div class="line"><span>ต้นทุนต่อหุ้น</span><b>'+f(r.unit,4)+'</b></div>'
  +'<div class="line big"><span>ยอดซื้อทั้งหมด</span><b>'+f(r.bt,2)+'</b></div>';
  if(r.s){var c=r.s.pl>0?'pos':r.s.pl<0?'neg':'',sg=r.s.pl>0?'+':'';
   h+='<p class="sec">ยอดขาย</p>'
   +'<div class="line"><span>มูลค่าหุ้น</span><b>'+f(r.s.sv,2)+'</b></div>'
-  +'<div class="line"><span>ค่าคอมขาย</span><b>'+f(r.s.sc,2)+'</b></div>'
+  +'<div class="line"><span>ค่าคอมขาย</span><b>'+f(r.s.sc,2)+'</b></div>'+(r.A>0?'<div class="line"><span>ค่า ATS</span><b>'+f(r.A,2)+'</b></div>':'')
   +'<div class="line"><span>ยอดขายสุทธิ</span><b>'+f(r.s.sn,2)+'</b></div>'
   +'<div class="line big"><span>กำไร/ขาดทุน</span><b class="'+c+'">'+sg+f(r.s.pl,2)+' ('+sg+f(r.s.pc,2)+'%)</b></div>'}
  return h+'</div>'}
@@ -108,8 +108,8 @@ function go(){
  var msg=!(q>0)||!(bp>0)?"กรุณาใส่จำนวนหุ้นและราคาซื้อให้ถูกต้อง":(sp>0&&sq>q)?"จำนวนที่ขายมากกว่าที่ซื้อ":"";
  if(msg){e.textContent=msg;e.style.display="block";$("out").hidden=true;return}
  e.style.display="none";
- var rs=PLANS.map(function(p){return calc(p.rate,q,bp,sp,sq)});
- var bi=rs[1].fee<rs[0].fee?1:0,diff=Math.abs(rs[0].fee-rs[1].fee),what=sp>0?"ค่าคอมซื้อ+ขายรวม":"ค่าคอมซื้อ";
+ var rs=PLANS.map(function(p){return calc(p.rate,p.ats,q,bp,sp,sq)});
+ var bi=rs[1].fee<rs[0].fee?1:0,diff=Math.abs(rs[0].fee-rs[1].fee),what=sp>0?"ค่าธรรมเนียมซื้อ+ขายรวม":"ค่าธรรมเนียมซื้อ";
  $("banner").textContent="แบบ "+PLANS[bi].key+" ถูกกว่า ประหยัด "+f(diff,2)+" บาท ("+what+")";
  $("cards").innerHTML=PLANS.map(function(p,i){return card(p,rs[i],i===bi)}).join("");
  $("out").hidden=false;
